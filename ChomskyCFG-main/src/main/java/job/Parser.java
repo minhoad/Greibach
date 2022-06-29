@@ -19,8 +19,10 @@ public class Parser {
 
     public CFGrammar parseGrammarToFNG(CFGrammar cfGrammar) throws AlphabetExceededException{
         op = new OperationsImpl();
-        cfGrammar = op.thirdStep(cfGrammar);
-        return op.fourthStep(cfGrammar);
+        cfGrammar = op.firstSecondStep(cfGrammar);
+        //cfGrammar = op.thirdStep(cfGrammar);
+        //return op.fourthStep(cfGrammar);
+        return cfGrammar;
     }
 
     public void printFNG(CFGrammar cfGrammar){
