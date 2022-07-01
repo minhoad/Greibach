@@ -9,7 +9,7 @@ import java.util.*;
 @NoArgsConstructor
 public class OperationsImpl implements Operations {
 	@Override
-	public CFGrammar firstSecondStep(CFGrammar cfGrammar){
+	public CFGrammar secondStep(CFGrammar cfGrammar){
 		var grammarRules = cfGrammar.getRules();
 		Map<String, Integer> position_value = new HashMap<>();
 		//pegar o número de cada regra
@@ -19,7 +19,22 @@ public class OperationsImpl implements Operations {
 		var newRules = grammarRules;
 
 		for(int x = 0; x < position_value.size() ; x++) {
-			while(existsCondition(newRules, position_value, x)) {
+			while(x<position_value.size()){//existsCondition2_2(newRules, position_value, x) // 2.2
+
+				int finalX = x;
+				newRules.stream()
+						.filter(r -> position_value.get(r.get(0)) == finalX)
+						.filter(re -> re.get(1).charAt(0) <= 90 && re.get(1).charAt(0) >= 65)
+						.filter(reg -> reg.get(1).length() > 1)
+						.filter(regr -> regr.get(1).charAt(0) == regr.get(0).charAt(0))
+						.forEach(regra -> {
+							System.out.println("aaaa");
+
+						});
+			}
+
+
+			while(existsCondition2_1(newRules, position_value, x)) {
 				for (int i = 0; i < newRules.size(); i++) {
 					if(position_value.get(newRules.get(i).get(0)) == x) {
 						String aux = newRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
@@ -40,15 +55,9 @@ public class OperationsImpl implements Operations {
 										}
 									}
 									newRules.remove(i);
-								} //else { // pra n perder a regras
-									//newRules.add(grammarRules.get(i));
-								//}
-							} //else { // pra n perder a regras
-								//newRules.add(grammarRules.get(i));
-							//}
-						} //else { // pra n perder a regras
-							//newRules.add(grammarRules.get(i));
-						//}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -58,7 +67,7 @@ public class OperationsImpl implements Operations {
 	}
 
 
-	public boolean existsCondition(List<List<String>> grammarRules, Map<String, Integer> position_value, int x){
+	public boolean existsCondition2_1(List<List<String>> grammarRules, Map<String, Integer> position_value, int x){
 		for (int i = 0; i < grammarRules.size(); i++) {
 			if(position_value.get(grammarRules.get(i).get(0)) == x) {
 				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
