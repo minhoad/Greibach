@@ -17,36 +17,43 @@ public class OperationsImpl implements Operations {
 			position_value.put(grammarRules.get(i).get(0), i);
 		}
 		List<List<String>> newRules = new ArrayList<>();
+		int counter = 0;
+		boolean flag_end = true;
+		while(flag_end) {
+			counter = 0;
+			for (int i = 0; i < grammarRules.size(); i++) {
 
-
-
-
-		for(int i = 0; i < grammarRules.size() ; i++){
-			String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
-			if(aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
-				if(aux.charAt(1) >= 97 && aux.charAt(1) <= 122 && aux.length()>1) { // conferimos se ao lado da regra há ao menos uma
-																					// variavel
-					if (position_value.get(grammarRules.get(i).get(0)) > position_value.get(aux.substring(0, 1))) { //  conferimos se a regra da
-																													// esquerda é maior
-						var sufix = aux.substring(1);
-
-						for (int j = 0; j < grammarRules.size(); j++) {
-							if (aux.charAt(0) == grammarRules.get(j).get(0).charAt(0)) {
-								sufix = grammarRules.get(j).get(1).concat(sufix);
-								List<String> aux_add_rules = new ArrayList<>();
-								aux_add_rules.add(grammarRules.get(i).get(0));
-								aux_add_rules.add(sufix);
-								newRules.add(aux_add_rules);
+				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
+				if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
+					if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
+						// variavel
+						if (position_value.get(grammarRules.get(i).get(0)) > position_value.get(aux.substring(0, 1))) { //  conferimos se a regra da
+							//System.out.println("esquerda " + grammarRules.get(i).get(0) + " direita " + aux.substring(0, 1));                                                                        // esquerda é maior
+							for (int j = 0; j < grammarRules.size(); j++) {
+								var sufix = aux.substring(1);
+								if (aux.charAt(0) == grammarRules.get(j).get(0).charAt(0)) {
+									sufix = grammarRules.get(j).get(1).concat(sufix);
+									List<String> aux_add_rules = new ArrayList<>();
+									aux_add_rules.add(grammarRules.get(i).get(0));
+									aux_add_rules.add(sufix);
+									newRules.add(aux_add_rules);
+									counter+=1;
+								}
 							}
+
+						} else { // pra n perder a regras
+							newRules.add(grammarRules.get(i));
 						}
+					}else { // pra n perder a regras
+						newRules.add(grammarRules.get(i));
 					}
-				}
-				else{ // pra n perder a regras
+				} else { // pra n perder a regras
 					newRules.add(grammarRules.get(i));
 				}
 			}
-			else{ // pra n perder a regras
-				newRules.add(grammarRules.get(i));
+			grammarRules = newRules;
+			if(counter == 0){
+				break;
 			}
 		}
 		
@@ -54,9 +61,33 @@ public class OperationsImpl implements Operations {
 		return cfGrammar;
 	}
 
-	// public CFGrammar secondSecondStep(CFGrammar cfGrammar){
-	
-	// }
+	public CFGrammar secondSecondStep(CFGrammar cfGrammar){
+		var grammarRules = cfGrammar.getRules();
+		int counter = 0;
+		boolean flag_end = true;
+		List<List<String>> newRules = new ArrayList<>();
+		while(flag_end) {
+			counter = 0;
+			for (int i = 0; i < grammarRules.size(); i++) {
+				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
+				if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
+					if(aux.length() > 1) {
+						if(aux.charAt(0) == grammarRules.get(i).get(0).charAt(0)) { // conferindo A -> Ay
+							var sufix = aux.substring(1);
+
+
+						}
+					}
+				}
+			}
+
+			if(counter == 0){
+				break;
+			}
+		}
+
+		return cfGrammar;
+	}
 
 
 
