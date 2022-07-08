@@ -111,39 +111,6 @@ public class OperationsImpl implements Operations {
 
 		for(int x = 0; x < position_value.size() ; x++) {
 			while(existsCondition(newRules, position_value, x)) {
-
-				int finalX = x;
-				newRules.stream()
-						.filter(r -> position_value.get(r.get(0)) == finalX) // pega todas as regras da mesma ex A
-						.filter(re -> re.get(1).charAt(0) <= 90 && re.get(1).charAt(0) >= 65) // se do lado esquerdo o 1° caractere é regra
-						.filter(reg -> reg.get(1).length() > 1) // A -> regra y , |y| >= 1
-						.filter(regr -> regr.get(1).charAt(0) == regr.get(0).charAt(0)) // A -> A
-						.forEach(regra -> {
-							List<String> auxiliar_all_rules = new ArrayList<>();
-							String aux_recE = "";
-							for(int k = 0; k < newRules.size() ; k++){
-								auxiliar_all_rules.add(newRules.get(k).get(0));
-							}
-							try {
-								aux_recE = OperationsUtils.getNewVarLetter(auxiliar_all_rules); // PEGO UMA LETRA PRA UMA NOVA REGRA QUE N EXISTE
-							} catch (AlphabetExceededException e) {
-								throw new RuntimeException(e);
-							}
-							String rule_Found = searchRule(newRules, aux_recE); // Achando uma regra que n tenha recursão a esquerda
-							// sempre vai vir com algo?
-
-							//trocar new rules e adicionar nova regra
-
-							List<String> auxiliar_add_new_rule = new ArrayList<>();
-							auxiliar_add_new_rule.add(aux_recE);
-
-
-							auxiliar_add_new_rule.add()
-
-
-
-						});
-
 				for (int i = 0; i < newRules.size(); i++) {
 					if(position_value.get(newRules.get(i).get(0)) == x) {
 						String aux = newRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
@@ -164,6 +131,51 @@ public class OperationsImpl implements Operations {
 										}
 									}
 									newRules.remove(i);
+								}
+								//////////////////////////////////////2.2
+								if (newRules.get(i).get(0).equals(aux.substring(0, 1))) { // A ->Ay
+									List<String> auxiliar_all_rules = new ArrayList<>();
+									String aux_recE = "";
+									for (int k = 0; k < newRules.size(); k++) {
+										auxiliar_all_rules.add(newRules.get(k).get(0));
+									}
+									try {
+										aux_recE = OperationsUtils.getNewVarLetter(auxiliar_all_rules); // PEGO UMA LETRA PRA UMA NOVA REGRA QUE N EXISTE
+									} catch (AlphabetExceededException e) {
+										throw new RuntimeException(e);
+									}
+									String rule_Found = searchRule(newRules, newRules.get(i).get(0)); // Achando uma regra que n tenha recursão a esquerda
+									// sempre vai vir com algo?
+									//trocar new rules(2°) e adicionar nova regra(1°)
+									for (int j = 0; j < newRules.size(); j++) { // 1°
+										if(j==0){
+											List<String> auxiliar_add_new_rule = new ArrayList<>();
+											auxiliar_add_new_rule.add(aux_recE);
+											auxiliar_add_new_rule.add(rule_Found);
+											newRules.add(auxiliar_add_new_rule);
+										}
+										else if(newRules.get(i).get(0).equals(newRules.get(j).get(0))){
+											List<String> auxiliar_add_new_rule = new ArrayList<>();
+											if(newRules.get(j).get(1).equals(rule_Found)) {
+												auxiliar_add_new_rule.add(aux_recE);
+												auxiliar_add_new_rule.add(newRules.get(j).get(1).substring(1).concat(aux_recE)); // parte sem recursão
+												newRules.add(auxiliar_add_new_rule);
+											}
+										}
+									}
+									for (int j = 0; j < newRules.size(); j++) { // 2°
+										if(newRules.get(j).get(0).charAt(0) == aux_recE.charAt(0)){
+											List<String> auxiliar_add_new_rule = new ArrayList<>();
+											auxiliar_add_new_rule.add(newRules.get(i).get(0));
+											auxiliar_add_new_rule.add(newRules.get(j).get(1));
+											newRules.add(auxiliar_add_new_rule);
+										}
+									}
+									//RETIRANDO REGRAS LAMBDA
+									CFGrammar aaa = cfGrammar;
+									aaa.setRules(newRules);
+									removeLambdaRules(aaa);
+									newRules = aaa.getRules();
 								}
 							}
 						}
