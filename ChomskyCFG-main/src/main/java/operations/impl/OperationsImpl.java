@@ -139,15 +139,18 @@ public class OperationsImpl implements Operations {
 									for (int k = 0; k < newRules.size(); k++) {
 										auxiliar_all_rules.add(newRules.get(k).get(0));
 									}
+									// pega tds as variaveis e pega uma nova a partir disso
 									try {
 										aux_recE = OperationsUtils.getNewVarLetter(auxiliar_all_rules); // PEGO UMA LETRA PRA UMA NOVA REGRA QUE N EXISTE
 									} catch (AlphabetExceededException e) {
 										throw new RuntimeException(e);
 									}
+
 									String rule_Found = searchRule(newRules, newRules.get(i).get(0)); // Achando uma regra que n tenha recursão a esquerda
 									// sempre vai vir com algo?
 									//trocar new rules(2°) e adicionar nova regra(1°)
-									for (int j = 0; j < newRules.size(); j++) { // 1°
+									int size_newrule = newRules.size();
+									for (int j = 0; j < size_newrule ; j++) { // 1°
 										if(j==0){
 											List<String> auxiliar_add_new_rule = new ArrayList<>();
 											auxiliar_add_new_rule.add(aux_recE);
@@ -171,11 +174,11 @@ public class OperationsImpl implements Operations {
 											newRules.add(auxiliar_add_new_rule);
 										}
 									}
-									//RETIRANDO REGRAS LAMBDA
-									CFGrammar aaa = cfGrammar;
-									aaa.setRules(newRules);
-									removeLambdaRules(aaa);
-									newRules = aaa.getRules();
+									// //RETIRANDO REGRAS LAMBDA
+									// CFGrammar aaa = cfGrammar;
+									// aaa.setRules(newRules);
+									// removeLambdaRules(aaa);
+									// newRules = aaa.getRules();
 								}
 							}
 						}
@@ -201,7 +204,7 @@ public class OperationsImpl implements Operations {
 
 	public boolean existsCondition(List<List<String>> grammarRules, Map<String, Integer> position_value, int x){
 		for (int i = 0; i < grammarRules.size(); i++) {
-			if(position_value.get(grammarRules.get(i).get(0)) == x) {
+			if(position_value.get(grammarRules.get(i).get(0)) == x) {// conferindo o valor com a posição
 				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
 				if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra  // 2.1
 					if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
@@ -212,7 +215,7 @@ public class OperationsImpl implements Operations {
 						}
 					}
 				}
-				if(x == aux.charAt(0)){ // 2.2
+				if(grammarRules.get(i).get(0).charAt(0) == aux.charAt(0)){ // 2.2
 					if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
 						if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
 							return true; // A -> Ay, |y| >= 1
