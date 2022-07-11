@@ -23,7 +23,7 @@ public class OperationsImpl implements Operations {
 		//pegar o número de cada regra
 
 		for(int i = 0; i < cfGrammar.getOriginalVariables().size() ; i++){
-			position_value.put(cfGrammar.getOriginalVariables().get(i), i);
+			position_value.put(cfGrammar.getOriginalVariables().get(i), i+1);
 		}
 
 		var newRules = grammarRules;
@@ -82,14 +82,12 @@ public class OperationsImpl implements Operations {
 		}
 	}
 
-
-
-
-
 	@SneakyThrows
 	public CFGrammar secondStep(CFGrammar cfGrammar){
 		var grammarRules = cfGrammar.getRules();
 		for(int i = 0; i < cfGrammar.getVariables().size() ; i++){
+			String variable = cfGrammar.getVariables().get(i);
+			//if(cfGrammar.get)
 
 		}
 

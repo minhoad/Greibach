@@ -7,7 +7,7 @@ public interface Operations {
 
     CFGrammar firstStep(CFGrammar cfGrammar) throws AlphabetExceededException;
 
-    //CFGrammar secondStep(CFGrammar cfGrammar);
+    CFGrammar secondStep(CFGrammar cfGrammar);
     CFGrammar thirdStep(CFGrammar cfGrammar);
     CFGrammar fourthStep(CFGrammar cfGrammar);
 }
