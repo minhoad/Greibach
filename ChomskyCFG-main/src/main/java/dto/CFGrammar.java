@@ -14,6 +14,7 @@ public class CFGrammar {
     private List<String> alphabetSymbols;
     private List<List<String>> rules;
     private String startVar;
+    private Map<String, Integer> position_value;
 
     public CFGrammar(CFGrammarDTO dto) {
         this.variables = listObjToString(Collections.singletonList(dto.getGlc().get(0)));
@@ -21,6 +22,7 @@ public class CFGrammar {
         this.rules = listObjToListString(Collections.singletonList((Collections.singletonList(dto.getGlc().get(2)))));
         this.startVar = dto.getGlc().get(3).toString();
         this.originalVariables = listObjToString(Collections.singletonList(dto.getGlc().get(0)));
+        this.position_value = new HashMap<>();
     }
 
     public static List<String> listObjToString(List<?> list){

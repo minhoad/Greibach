@@ -10,183 +10,90 @@ import utils.OperationsUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static utils.OperationsUtils.getNewVarLetter;
+
 @NoArgsConstructor
 public class OperationsImpl implements Operations {
-	private CFGrammar removeLambdaRules(CFGrammar cfGrammar) {
-		List<String> lambdListOG;
-		List<String> lambdaList = new ArrayList<>();
-		CFGrammar newGrammar = cfGrammar;
-		do {
-			lambdListOG = lambdaList;
-			// Identifica novas regras nulas
-			lambdaList = newGrammar.getRules().stream()
-					.map(l -> {
-						List<String> returnList = new ArrayList<>();
-						l.stream().forEach(rule -> {
-							if(rule.contains("#")) {
-								returnList.add(l.get(0));
-							}
-						});
-						return returnList;
-					})
-					.flatMap(t -> t.stream())
-					.collect(Collectors.toList());
 
-			// Atualiza Gramatica
-			List<List<String>> newRules = new ArrayList<>();
-			for(String c : lambdaList){
-				for(List<String> l : cfGrammar.getRules()) {
-					if(!newRules.contains(l))
-						newRules.add(l);
-
-					// Se este caractere possui regra Lambda
-					if(l.get(1).contains(c)) {
-						String rule = l.get(1);
-
-						// Lista todos os indices do caracter mencionado
-						List<Integer> charsWithLambda = new ArrayList<>();
-						for(int i=0; i<rule.length(); i++) {
-							if (lambdaList.contains(rule.substring(i, i+1))) {
-								charsWithLambda.add(i);
-							}
-						}
-
-						// Cria todas permutacoes disponivel de variacoes de posicoes do caractere e escreve as regras
-						List<String> pendingRules = new ArrayList<>();
-						for(HashSet<Integer> combination : OperationsUtils.permute(charsWithLambda)) {
-							String newRuleAux = "";
-							for(int i=0; i<rule.length(); i++) {
-								if(charsWithLambda.contains(i)) {
-									if(combination.contains(i)) {
-										newRuleAux = newRuleAux.concat(rule.substring(i,i+1));
-									}
-								}
-								else {
-									newRuleAux = newRuleAux.concat(rule.substring(i,i+1));
-								}
-							}
-
-							// Caso a regra ï¿½ vazia, retorna uma nova regra Lambda
-							if(newRuleAux.isEmpty())
-								pendingRules.add("#");
-							else
-								pendingRules.add(newRuleAux);
-						}
-
-						// Formata e armazenas as novas regras, elinando regras autoreferentes no processo
-						for(String pendingRule : pendingRules) {
-							List<String> newRule = new ArrayList<>();
-							newRule.add(l.get(0));
-							newRule.add(pendingRule);
-							if(!newRules.contains(newRule) && !(l.get(0).equals(pendingRule)))
-								newRules.add(newRule);
-						}
-					}
-				}
-			};
-
-			// Atualiza as novas regras
-			newGrammar.setRules(newRules);
-
-			// Enquanto existir novas regras lï¿½mbdas geradas, o processo se repete
-		} while (!new HashSet<>(lambdaList).equals(new HashSet<>(lambdListOG)));
-
-		// Remove as regras Lambdas, exceto para variï¿½vel inicial
-		newGrammar.setRules(newGrammar.getRules().stream()
-				.filter(l -> (!(l.get(1).contains("#") && !(newGrammar.getStartVar().equals(l.get(0))))))
-				.collect(Collectors.toList())
-		);
-		return newGrammar;
-	}
 	@Override
-	@SneakyThrows
-	public CFGrammar secondStep(CFGrammar cfGrammar){
+	public CFGrammar firstStep(CFGrammar cfGrammar) throws AlphabetExceededException {
 		var grammarRules = cfGrammar.getRules();
+
 		Map<String, Integer> position_value = new HashMap<>();
 		//pegar o número de cada regra
+
 		for(int i = 0; i < cfGrammar.getOriginalVariables().size() ; i++){
 			position_value.put(cfGrammar.getOriginalVariables().get(i), i);
 		}
+
 		var newRules = grammarRules;
 
-		for(int x = 0; x < position_value.size() ; x++) {
-			while(existsCondition(newRules, position_value, x)) {
-				for (int i = 0; i < newRules.size(); i++) {
-					if(position_value.get(newRules.get(i).get(0)) == x) {
-						String aux = newRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
-						if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
-							if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
-								// variavel
-								if (position_value.get(newRules.get(i).get(0)) > position_value.get(aux.substring(0, 1))) { //  conferimos se a regra da
-									// esquerda é maior
-									for (int j = 0; j < newRules.size(); j++) {
-										var sufix = aux.substring(1);
-										if (aux.charAt(0) == newRules.get(j).get(0).charAt(0)) {
-											sufix = newRules.get(j).get(1).concat(sufix);
-											List<String> aux_add_rules = new ArrayList<>();
-											aux_add_rules.add(newRules.get(i).get(0));
-											aux_add_rules.add(sufix);
-											newRules.add(aux_add_rules);
+		for(int a = 0; a < newRules.size(); a++){
+			List<String> rules = new ArrayList<>();
+			for(List<String> xa : newRules){
+				if(newRules.get(a).get(0).equals(xa.get(0))) // quando a regra que eu to olhando é igual a do for de fora
+					rules.add(xa.get(1));
+			}
 
-										}
-									}
-									newRules.remove(i);
-								}
-								//////////////////////////////////////2.2
-								if (newRules.get(i).get(0).equals(aux.substring(0, 1))) { // A ->Ay
-									List<String> auxiliar_all_rules = new ArrayList<>();
-									String aux_recE = "";
-									for (int k = 0; k < newRules.size(); k++) {
-										auxiliar_all_rules.add(newRules.get(k).get(0));
-									}
-									// pega tds as variaveis e pega uma nova a partir disso
-									try {
-										aux_recE = OperationsUtils.getNewVarLetter(auxiliar_all_rules); // PEGO UMA LETRA PRA UMA NOVA REGRA QUE N EXISTE
-									} catch (AlphabetExceededException e) {
-										throw new RuntimeException(e);
-									}
-
-									String rule_Found = searchRule(newRules, newRules.get(i).get(0)); // Achando uma regra que n tenha recursão a esquerda
-									// sempre vai vir com algo?
-									//trocar new rules(2°) e adicionar nova regra(1°)
-									int size_newrule = newRules.size();
-									for (int j = 0; j < size_newrule ; j++) { // 1°
-										if(j==0){
-											List<String> auxiliar_add_new_rule = new ArrayList<>();
-											auxiliar_add_new_rule.add(aux_recE);
-											auxiliar_add_new_rule.add(rule_Found);
-											newRules.add(auxiliar_add_new_rule);
-										}
-										else if(newRules.get(i).get(0).equals(newRules.get(j).get(0))){
-											List<String> auxiliar_add_new_rule = new ArrayList<>();
-											if(newRules.get(j).get(1).equals(rule_Found)) {
-												auxiliar_add_new_rule.add(aux_recE);
-												auxiliar_add_new_rule.add(newRules.get(j).get(1).substring(1).concat(aux_recE)); // parte sem recursão
-												newRules.add(auxiliar_add_new_rule);
-											}
-										}
-									}
-									for (int j = 0; j < newRules.size(); j++) { // 2°
-										if(newRules.get(j).get(0).charAt(0) == aux_recE.charAt(0)){
-											List<String> auxiliar_add_new_rule = new ArrayList<>();
-											auxiliar_add_new_rule.add(newRules.get(i).get(0));
-											auxiliar_add_new_rule.add(newRules.get(j).get(1));
-											newRules.add(auxiliar_add_new_rule);
-										}
-									}
-									// //RETIRANDO REGRAS LAMBDA
-									// CFGrammar aaa = cfGrammar;
-									// aaa.setRules(newRules);
-									// removeLambdaRules(aaa);
-									// newRules = aaa.getRules();
-								}
-							}
+			for(int ab = 0; ab < rules.size(); ab++) {
+				//System.out.println("GET: " + arrayList.get(ab) + "Index: " + ab);
+				String rule = rules.get(ab);
+				//System.out.println("V: " + variavel.getVariavel() + " -> " + regra);
+				if (rule.length() > 1) {
+					//System.out.println("Entrou if " + regra);
+					String newRule = Character.toString(rule.charAt(0));
+					for (int i = 1; i < rule.length(); i++) {
+						String c = String.valueOf(rule.charAt(i));
+						//System.out.println("Entrou for " + c);
+						if (cfGrammar.getAlphabetSymbols().contains(c)) {
+							String nextRule = getNewVarLetter(cfGrammar.getOriginalVariables());
+							List<String> new_rule_added = new ArrayList<>();
+							position_value.put(nextRule,position_value.size());
+							newRule = newRule.concat(nextRule);
+						} else {
+							newRule = newRule.concat(c);
 						}
+
 					}
+					changeRule(newRules, rule, newRule, newRules.get(a).get(0));
 				}
 			}
 		}
+		List<String> auxiliar_variables = new ArrayList<>();
+		for(int i = 0; i < grammarRules.size() ; i++){
+			if(!auxiliar_variables.contains(grammarRules.get(i).get(0))){
+				auxiliar_variables.add(grammarRules.get(i).get(0));
+			}
+		}
+		cfGrammar.setVariables(auxiliar_variables);
 		cfGrammar.setRules(newRules);
+		cfGrammar.setPosition_value(position_value);
+		return cfGrammar;
+	}
+
+	public void changeRule(List<List<String>> newRules, String Rule, String newRule, String RuleName){
+		List<String> aux = new ArrayList<>();
+		for(int i = 0; i < newRules.size() ; i++){
+			if(newRules.get(i).get(1).equals(Rule)){
+				aux.add(RuleName);
+				aux.add(newRule);
+				newRules.set(i, aux);
+			}
+		}
+	}
+
+
+
+
+
+	@SneakyThrows
+	public CFGrammar secondStep(CFGrammar cfGrammar){
+		var grammarRules = cfGrammar.getRules();
+		for(int i = 0; i < cfGrammar.getVariables().size() ; i++){
+
+		}
+
+
 		return cfGrammar;
 	}
 
@@ -202,9 +109,9 @@ public class OperationsImpl implements Operations {
 	}
 
 
-	public boolean existsCondition(List<List<String>> grammarRules, Map<String, Integer> position_value, int x){
+	public boolean existsCondition(List<List<String>> grammarRules, Map<String, Integer> position_value){
 		for (int i = 0; i < grammarRules.size(); i++) {
-			if(position_value.get(grammarRules.get(i).get(0)) == x) {// conferindo o valor com a posição
+			if(position_value.containsKey(grammarRules.get(i).get(0))) {// conferindo se é uma regra original
 				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
 				if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra  // 2.1
 					if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
@@ -213,12 +120,8 @@ public class OperationsImpl implements Operations {
 							return true;
 
 						}
-					}
-				}
-				if(grammarRules.get(i).get(0).charAt(0) == aux.charAt(0)){ // 2.2
-					if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra
-						if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
-							return true; // A -> Ay, |y| >= 1
+						if(grammarRules.get(i).get(0).charAt(0) == aux.charAt(0)) { // 2.2
+							return true;
 						}
 					}
 				}
