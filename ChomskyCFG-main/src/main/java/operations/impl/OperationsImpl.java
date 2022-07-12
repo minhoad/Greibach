@@ -46,16 +46,19 @@ public class OperationsImpl implements Operations {
 						String c = String.valueOf(rule.charAt(i));
 						//System.out.println("Entrou for " + c);
 						if (cfGrammar.getAlphabetSymbols().contains(c)) {
-							String nextRule = getNewVarLetter(cfGrammar.getOriginalVariables());
+							String nextRule = getNewVarLetter(cfGrammar.getOriginalVariables()); // pega uma nova letra pra uma regra
 							List<String> new_rule_added = new ArrayList<>();
-							position_value.put(nextRule,position_value.size());
+							position_value.put(nextRule,position_value.size()); // adcionando a nova letra da regra nos valores
 							newRule = newRule.concat(nextRule);
+							new_rule_added.add(nextRule);
+							new_rule_added.add(c);
+							newRules.add(new_rule_added);
 						} else {
 							newRule = newRule.concat(c);
 						}
 
 					}
-					changeRule(newRules, rule, newRule, newRules.get(a).get(0));
+					newRules = changeRule(newRules, rule, newRule, newRules.get(a).get(0));
 				}
 			}
 		}
@@ -66,12 +69,13 @@ public class OperationsImpl implements Operations {
 			}
 		}
 		cfGrammar.setVariables(auxiliar_variables);
+		cfGrammar.setOriginalVariables(auxiliar_variables);
 		cfGrammar.setRules(newRules);
 		cfGrammar.setPosition_value(position_value);
 		return cfGrammar;
 	}
 
-	public void changeRule(List<List<String>> newRules, String Rule, String newRule, String RuleName){
+	public List<List<String>> changeRule(List<List<String>> newRules, String Rule, String newRule, String RuleName){
 		List<String> aux = new ArrayList<>();
 		for(int i = 0; i < newRules.size() ; i++){
 			if(newRules.get(i).get(1).equals(Rule)){
@@ -80,53 +84,104 @@ public class OperationsImpl implements Operations {
 				newRules.set(i, aux);
 			}
 		}
+		return newRules;
 	}
-
+	@Override
 	@SneakyThrows
 	public CFGrammar secondStep(CFGrammar cfGrammar){
 		var grammarRules = cfGrammar.getRules();
-		for(int i = 0; i < cfGrammar.getVariables().size() ; i++){
+		for(int i = 0; i < cfGrammar.getVariables().size() ; i++) {
 			String variable = cfGrammar.getVariables().get(i);
-			//if(cfGrammar.get)
+			if (cfGrammar.getPosition_value().containsKey(variable) ){
+				List<String> rules = new ArrayList<>();
+				for (List<String> xa : grammarRules) {
+					if (grammarRules.get(i).get(0).equals(xa.get(0))) // quando a regra que eu to olhando é igual a do for de fora
+						rules.add(xa.get(1));
+				}
+				for (int ab = 0; ab < rules.size(); ab++) {
+					//System.out.println("GET: " + arrayList.get(ab) + "Index: " + ab);
+					String rule = rules.get(ab);
+					//System.out.println("V: " + variavel.getVariavel() + " -> " + regra);
+					String firstSymbol = Character.toString(rule.charAt(0));
+					if (cfGrammar.getVariables().contains(firstSymbol)) {
+						if (firstSymbol.equals(variable)) {
+							rules.remove(ab);
+							List<String> rules_w_rec = new ArrayList<>();
+							for (String xa :rules) {
+								if (grammarRules.get(i).get(0).equals(xa)) // quando a regra que eu to olhando é igual a do for de fora
+									rules_w_rec.add(xa);
+							}
+							String rule_w_rec = rule.substring(1);
+
+							String nextRule = getNewVarLetter(cfGrammar.getVariables());
+							List<String> aux = new ArrayList<>();
+							aux.add(nextRule);
+							aux.add(rule_w_rec);
+
+							grammarRules.add(aux);
+
+							String rule_with_rc = rule_w_rec.concat(nextRule);
+
+							for (String r : rules_w_rec) {
+								String aux_add = r.concat(nextRule);
+								List<String> aux_ = new ArrayList<>();
+								aux_.add(firstSymbol);
+								aux_.add(rule_with_rc);
+								grammarRules.add(aux);
+							}
+						}else if(cfGrammar.getPosition_value().get(firstSymbol) > cfGrammar.getPosition_value().get(variable)){ //A -> B
+							List<String> rules_ = new ArrayList<>();
+							for (String xa :rules) {
+								rules_.add(xa);
+							}
+							rules_.remove(rule);
+							for (String r : rules_) {
+								int size = rule.length();
+								String oldrule = rule.substring(1, size);
+								String newrule = r + oldrule;
+								//System.out.println("Regra antiga: " + regraAntiga + "/regr: " + regr + "/novaRegra: " + novaRegra);
+								List<String> aux_ = new ArrayList<>();
+								aux_.add(firstSymbol);
+								aux_.add(newrule);
+								grammarRules.add(aux_);
+							}
+
+
+						}
+
+						List<String> auxiliar_variables = new ArrayList<>();
+						for (int k = 0; k < grammarRules.size(); k++) {
+							if (!auxiliar_variables.contains(grammarRules.get(k).get(0))) {
+								auxiliar_variables.add(grammarRules.get(k).get(0));
+							}
+						}
+
+
+						cfGrammar.setVariables(auxiliar_variables);
+						cfGrammar.setOriginalVariables(auxiliar_variables);
+						cfGrammar.setRules(grammarRules);
+						//secondStep(cfGrammar);
+					}
+					//COMECA COM SIMBOLO (Ta resolvido)
+				}
+			} else {
+				List<String> auxiliar_variables = new ArrayList<>();
+				for (int k = 0; k < grammarRules.size(); k++) {
+					if (!auxiliar_variables.contains(grammarRules.get(k).get(0))) {
+						auxiliar_variables.add(grammarRules.get(k).get(0));
+					}
+				}
+				cfGrammar.setVariables(auxiliar_variables);
+				cfGrammar.setOriginalVariables(auxiliar_variables);
+				cfGrammar.setRules(grammarRules);
+				return cfGrammar;
+			}
 
 		}
-
-
 		return cfGrammar;
 	}
 
-	public String searchRule(List<List<String>> grammarRules, String x){
-		for(int i = 0; i < grammarRules.size() ; i++){
-			if(grammarRules.get(i).get(0).equals(x)){ // regra que estamos na iteração igual a regra analisada
-				if(grammarRules.get(i).get(1).length() == 1 && grammarRules.get(i).get(1).equals(grammarRules.get(i).get(1).toLowerCase())){ // se não possui recursividade a esquerda
-					return grammarRules.get(i).get(1); // w
-				}
-			}
-		}
-		return "";
-	}
 
-
-	public boolean existsCondition(List<List<String>> grammarRules, Map<String, Integer> position_value){
-		for (int i = 0; i < grammarRules.size(); i++) {
-			if(position_value.containsKey(grammarRules.get(i).get(0))) {// conferindo se é uma regra original
-				String aux = grammarRules.get(i).get(1); // toda troca de regra, atualiza aux e coloca a regra atual
-				if (aux.charAt(0) <= 90 && aux.charAt(0) >= 65) { // conferimos se é uma regra  // 2.1
-					if (aux.length() > 1) { // conferimos se ao lado da regra há ao menos uma
-						// variavel
-						if (position_value.get(grammarRules.get(i).get(0)) > position_value.get(aux.substring(0, 1))) {
-							return true;
-
-						}
-						if(grammarRules.get(i).get(0).charAt(0) == aux.charAt(0)) { // 2.2
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
 
 
 
