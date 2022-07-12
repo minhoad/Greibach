@@ -21,9 +21,9 @@ public class Parser {
         op = new OperationsImpl();
         cfGrammar = op.firstStep(cfGrammar);
         cfGrammar = op.secondStep(cfGrammar);
-        //cfGrammar = op.thirdStep(cfGrammar);
-        //return op.fourthStep(cfGrammar);
-        return cfGrammar;
+        cfGrammar = op.thirdStep(cfGrammar);
+        return op.fourthStep(cfGrammar);
+        //return cfGrammar;
     }
 
     public void printFNG(CFGrammar cfGrammar){
