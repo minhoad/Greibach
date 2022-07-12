@@ -23,7 +23,6 @@ public class Parser {
         cfGrammar = op.secondStep(cfGrammar);
         cfGrammar = op.thirdStep(cfGrammar);
         return op.fourthStep(cfGrammar);
-        //return cfGrammar;
     }
 
     public void printFNG(CFGrammar cfGrammar){
